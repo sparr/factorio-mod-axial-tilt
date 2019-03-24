@@ -4,76 +4,66 @@
 --   end
 -- end
 
-local min_day_length = settings.global['axial-tilt-min-day-length'].value
-local max_day_length = settings.global['axial-tilt-max-day-length'].value
-local days_per_year  = settings.global['axial-tilt-days-per-year' ].value
+-- function round(num, numDecimalPlaces)
+--   local mult = 10^(numDecimalPlaces or 0)
+--   return math.floor(num * mult + 0.5) / mult
+-- end
 
-local seasonal_variance = max_day_length - min_day_length
+local function on_init()
+  game.surfaces["nauvis"].ticks_per_day = 1 / settings.global['axial-tilt-time-compression'].value * 25000
+  update_durations()
+end
 
-local day_length, day_end, night_start, night_end, day_start, night_length
+local function on_configuration_changed()
+  game.surfaces["nauvis"].ticks_per_day = 1 / settings.global['axial-tilt-time-compression'].value * 25000
+end
 
-local ticks_per_day = 25000
-local dusk_dawn_length = 5000
+-- a hack to avoid range errors when changing multiple times at once
+function set_times(surface, dusk, evening, morning, dawn)
+  surface.dusk = 0
+  surface.evening = .0000000001
+  surface.morning = .0000000002
+  surface.dawn = dawn
+  surface.morning = morning
+  surface.evening = evening
+  surface.dusk = dusk
+end
 
-local function on_tick(event)
-  local tick_in_day = event.tick % ticks_per_day
-  -- once per game day
-  if tick_in_day == 0 or day_length == nil then
-    -- update daytime modifiers for today
-    local day = event.tick / ticks_per_day
-    local day_of_year = day % days_per_year + 0.5
-    local percent_of_year = day_of_year / days_per_year
-    local angle_in_year = percent_of_year * math.pi * 2.0
-    local start_angle = 0 -- spring equinox
-    -- day length 12500 is default, day is 50% sun, 40% dawn/dusk, 10% night
-    -- day length 25000 means permanent sunlight
-    -- day length >=15000 means no full night, dusk transitions to dawn
-    -- day length <=0 means no full sunlight, dawn transitions to dusk
-    -- day length -10000 means permanent night
-    day_length = seasonal_variance * (math.sin(angle_in_year + start_angle) + 1) / 2.0 + min_day_length
-    night_length = ticks_per_day - day_length - dusk_dawn_length * 2.0
-    day_end = day_length / 2.0
-    night_start = day_end + dusk_dawn_length
-    day_start = ticks_per_day - day_length / 2.0
-    night_end = day_start - dusk_dawn_length
-    -- debug("day " .. day .. " " .. day_of_year .. "/" .. days_per_year .. " day length " .. day_length)
+function update_durations()
+  global.day_num = global.day_num and global.day_num+1 or 1
+  -- update daytime modifiers for today
+  local days_per_year = settings.global['axial-tilt-days-per-year'].value
+  local tilt = settings.global['axial-tilt-axial-tilt'].value
+  local latitude = settings.global['axial-tilt-latitude'].value
+  local fraction_of_year = (global.day_num % days_per_year) / days_per_year
+  -- entirely accurate calculation of how long daytime should be
+  local daytime_fraction = 1/math.pi*math.acos((math.tan(latitude*math.pi/180)*math.sin(tilt*math.pi/180))/math.sqrt(math.tan(fraction_of_year*2*math.pi)*math.tan(fraction_of_year*2*math.pi)+math.cos(fraction_of_year*2*math.pi)*math.cos(fraction_of_year*2*math.pi)))
+  if daytime_fraction ~= daytime_fraction then -- NaN
+    daytime_fraction = 0
   end
+  if fraction_of_year<0.25 or fraction_of_year>0.75 then
+    daytime_fraction = 1 - daytime_fraction
+  end
+  -- completely hacky calculation of how long dusk and morning should be
+  -- polar winter still has a very short light period
+  -- polar spring/summer are lacking some partial darkness periods
+  dusk_morning_fraction_of_night = 0.3 + (latitude / 90 * 0.3) - (fraction_of_year % 0.5 * 0.6)
+  local dusk = daytime_fraction / 2.0 - .000000000000002
+  local evening = daytime_fraction / 2.0 + (dusk_morning_fraction_of_night * (1 - daytime_fraction)) / 2.0 - .000000000000001
+  local morning = 1 - daytime_fraction / 2.0 - (dusk_morning_fraction_of_night * (1 - daytime_fraction)) / 2.0 + .000000000000001
+  local dawn = 1 - daytime_fraction / 2.0 + .000000000000002
+  set_times(game.surfaces["nauvis"], dusk, evening, morning, dawn)
+  -- debug("day " .. global.day_num .. "/" .. days_per_year .. "=" .. round(fraction_of_year,6) .. ", day:" .. round(daytime_fraction,6) .. " duskmorn:" .. round(dusk_morning_fraction_of_night,6))
+end
 
-  -- 10 updates per second
-  if event.tick % 6 == 2 then
-    -- update daytime on main surface
-    -- surface.daytime reference:
-    -- 0.00 noon
-    -- 0.25 sunset
-    -- 0.45 dark
-    -- 0.50 midnight
-    -- 0.55 end of dark
-    -- 0.75 sunrise
-
-    --FIXME sharp transition at noon when day_length<0
-    local daytime = 0
-    if tick_in_day < day_end then
-      -- afternoon
-      daytime = tick_in_day / day_end * 0.25
-    elseif tick_in_day > day_start then
-      -- morning
-      daytime = (tick_in_day - day_start) / (ticks_per_day - day_start) * 0.25 + 0.75
-    elseif tick_in_day < night_start and tick_in_day < ticks_per_day / 2 then
-      -- dusk
-      -- sin curve gives smoother transition than stock linear gradient
-      daytime = (math.sin((tick_in_day - day_end  ) / dusk_dawn_length * math.pi - math.pi/2.0) / 2.0 + 0.5) * 0.20 + 0.25
-    elseif tick_in_day > night_end then
-      -- dawn
-      daytime = (math.sin((tick_in_day - night_end) / dusk_dawn_length * math.pi - math.pi/2.0) / 2.0 + 0.5) * 0.20 + 0.55
-    else
-      -- night
-      daytime = (tick_in_day - night_start) / night_length * 0.10 + 0.45
-    end
-    -- if event.tick % 300 == 2 then
-    --   debug("tick " .. tick_in_day .. " daytime " .. daytime)
-    -- end
-    game.surfaces["nauvis"].daytime = daytime
+-- TODO: replace with registered Nth tick handler that is aware of configuration changes?
+local function on_tick(event)
+  -- once per game day, at noon(ish)
+  if (not game.surfaces["nauvis"].always_day) and game.surfaces["nauvis"].daytime < 1/game.surfaces["nauvis"].ticks_per_day then
+    update_durations()
   end
 end
 
+script.on_init(on_init)
+script.on_configuration_changed(on_configuration_changed)
 script.on_event(defines.events.on_tick, on_tick)
