@@ -15,7 +15,7 @@ local function on_init()
 end
 
 local function on_configuration_changed()
-  game.surfaces["nauvis"].ticks_per_day = 1 / settings.global['axial-tilt-time-compression'].value * 25000
+  on_init()
 end
 
 -- a hack to avoid range errors when changing multiple times at once
