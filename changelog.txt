@@ -1,0 +1,28 @@
+---------------------------------------------------------------------------------------------------
+Version: 1.1.0
+Date: 2021-12-28
+  Bugfixes:
+    - Fix arithmetic mistake in dawn/dusk duration
+  Changes:
+    - Version bump for Factorio 1.1
+    - Remove unused mod setting definition keys
+  Other:
+    - Retroactively fill out partial changelog for earlier versions
+---------------------------------------------------------------------------------------------------
+Version: 0.17.0
+Date: ????
+---------------------------------------------------------------------------------------------------
+Version: 0.16.0
+Date: 2018-03-25
+  Changes:
+    - Remove unused mod settings
+    - Factorio version bump for 0.16
+---------------------------------------------------------------------------------------------------
+Version: 0.15.1
+Date: ????
+---------------------------------------------------------------------------------------------------
+Version: 0.15.0
+Date: 2017-??-??
+  Other:
+    - Initial version of the mod
+
