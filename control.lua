@@ -1,13 +1,13 @@
--- local function debug(...)
---   if game and game.players[1] then
---     game.players[1].print("DEBUG: " .. serpent.line(...,{comment=false}))
---   end
--- end
+local function debug(...)
+  if game and game.players[1] then
+    game.players[1].print("DEBUG: " .. serpent.line(...,{comment=false}))
+  end
+end
 
--- function round(num, numDecimalPlaces)
---   local mult = 10^(numDecimalPlaces or 0)
---   return math.floor(num * mult + 0.5) / mult
--- end
+function round(num, numDecimalPlaces)
+  local mult = 10^(numDecimalPlaces or 0)
+  return math.floor(num * mult + 0.5) / mult
+end
 
 local function on_init()
   game.surfaces["nauvis"].ticks_per_day = 1 / settings.global['axial-tilt-time-compression'].value * 25000
@@ -47,13 +47,13 @@ function update_durations()
   -- completely hacky calculation of how long dusk and morning should be
   -- polar winter still has a very short light period
   -- polar spring/summer are lacking some partial darkness periods
-  dusk_morning_fraction_of_night = 0.3 + (latitude / 90 * 0.3) - (fraction_of_year % 0.5 * 0.6)
+  dusk_morning_fraction_of_night = 0.3 + (latitude / 90 * 0.3) - math.abs(0.5 - fraction_of_year) * 0.6
   local dusk = daytime_fraction / 2.0 - .000000000000002
   local evening = daytime_fraction / 2.0 + (dusk_morning_fraction_of_night * (1 - daytime_fraction)) / 2.0 - .000000000000001
   local morning = 1 - daytime_fraction / 2.0 - (dusk_morning_fraction_of_night * (1 - daytime_fraction)) / 2.0 + .000000000000001
   local dawn = 1 - daytime_fraction / 2.0 + .000000000000002
   set_times(game.surfaces["nauvis"], dusk, evening, morning, dawn)
-  -- debug("day " .. global.day_num .. "/" .. days_per_year .. "=" .. round(fraction_of_year,6) .. ", day:" .. round(daytime_fraction,6) .. " duskmorn:" .. round(dusk_morning_fraction_of_night,6))
+  debug("day " .. global.day_num .. "/" .. days_per_year .. "=" .. round(fraction_of_year,6) .. ", day:" .. round(daytime_fraction,6) .. " duskmorn:" .. round(dusk_morning_fraction_of_night,6))
 end
 
 -- TODO: replace with registered Nth tick handler that is aware of configuration changes?
