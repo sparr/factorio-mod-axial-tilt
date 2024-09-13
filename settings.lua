@@ -32,5 +32,5 @@ data:extend(
       minimum_value = -90,
       maximum_value = 90
     },
-  }
+  } --[=[@as data.AnyModSetting[]]=]
 )
