@@ -2,34 +2,22 @@
 Version: 2.1.2
 Date: 2026-09-07
   Bugfixes:
-    - Nauvis gets its real day back. A day there is 25200 ticks, and this mod has been
-      setting 25000 since the time compression option was added, shortening it by 0.8%.
-      The length now comes from the planet rather than from a number in this mod.
+    - Nauvis gets its real day length back. A day there is 25200 ticks; this mod had been
+      setting 25000, shortening it by 0.8%.
 ---------------------------------------------------------------------------------------------------
 Version: 2.1.1
 Date: 2026-09-07
   Other:
-    - Add a test suite: 15 busted specs for the seasonal arithmetic, 10 factorio-test
-      fixtures for what a real game does with it
-    - Split that arithmetic out into lib/seasons.lua so it can be tested without a game
+    - Add a test suite
 ---------------------------------------------------------------------------------------------------
 Version: 2.1.0
 Date: 2026-09-07
   Other:
     - Update for Factorio 2.1
   Bugfixes:
-    - Stop crashing on load: 2.0 renamed the table a mod's state lives in from global to
-      storage, and this mod stores the day counter there
-    - Stop crashing anywhere south of the equator. Dawn and dusk now lengthen with
-      distance from the equator in both hemispheres, where a southern latitude used to
-      drive their length negative and put evening before dusk. The engine refuses times
-      that are not strictly ordered, and refusing them killed the mod outright. Latitudes
-      0 to 68 are unaffected.
-  Changes:
-    - Keep the four transition times inside the day they describe. A polar midwinter has
-      no daylight to nudge either side of, so dusk fell a fraction below zero and dawn the
-      same fraction past one. The engine stores those quite happily; this is tidiness, not
-      a crash.
+    - No longer crashes on load
+    - No longer crashes at any latitude south of the equator, or at the poles. Latitudes
+      0 to 68 behave as before.
 ---------------------------------------------------------------------------------------------------
 Version: 1.1.2
 Date: 2024-09-14
