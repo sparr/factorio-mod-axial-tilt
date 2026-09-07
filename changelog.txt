@@ -1,6 +1,6 @@
 ---------------------------------------------------------------------------------------------------
 Version: 1.1.2
-Date: ????
+Date: 2024-09-14
   Changes:
     - Add LuaLS annotations to source
     - Disable debug output
