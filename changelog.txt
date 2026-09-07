@@ -1,4 +1,11 @@
 ---------------------------------------------------------------------------------------------------
+Version: 2.1.1
+Date: 2026-09-07
+  Other:
+    - Add a test suite: 15 busted specs for the seasonal arithmetic, 10 factorio-test
+      fixtures for what a real game does with it
+    - Split that arithmetic out into lib/seasons.lua so it can be tested without a game
+---------------------------------------------------------------------------------------------------
 Version: 2.1.0
 Date: 2026-09-07
   Other:
