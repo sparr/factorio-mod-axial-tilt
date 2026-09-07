@@ -1,6 +1,6 @@
 ---------------------------------------------------------------------------------------------------
 Version: 2.1.2
-Date: ????
+Date: 2026-09-07
   Bugfixes:
     - Nauvis gets its real day back. A day there is 25200 ticks, and this mod has been
       setting 25000 since the time compression option was added, shortening it by 0.8%.
