@@ -1,5 +1,4 @@
----@type { day_num: integer }
-global=global
+-- 2.0 renamed the table a mod's state lives in from `global` to `storage`.
 
 ---A time of day, a number in range `[0, 1)`, with 0 being noon and 0.5 being midnight
 ---@alias Daytime number
@@ -31,7 +30,7 @@ end
 function update_durations()
   ---Counter for the in-game date
   ---@type integer
-  global.day_num = global.day_num and global.day_num+1 or 1
+  storage.day_num = storage.day_num and storage.day_num+1 or 1
 
   ---Number of days per game year
   ---@type integer
@@ -44,7 +43,7 @@ function update_durations()
   local latitude = settings.global['axial-tilt-latitude'].value --[[@as double]]
   ---How far into the year is the current date? [0,1)
   ---@type double
-  local fraction_of_year = (global.day_num % days_per_year) / days_per_year
+  local fraction_of_year = (storage.day_num % days_per_year) / days_per_year
 
   ---Accurate calculation of how long daytime should be as a fraction of the day [0,1)
   ---@type double
