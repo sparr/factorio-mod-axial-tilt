@@ -5,9 +5,14 @@
 local seasons = {}
 
 ---The least daylight a day may have. The four transition times are derived by nudging a
----few femtoseconds either side of the daylight period, and the engine insists they stay
----strictly ordered inside [0, 1). Once a polar winter takes daylight to nothing there is
----nothing left to nudge either side of, and dusk lands below zero -- so leave a sliver.
+---few femtoseconds either side of the daylight period, so with no daylight at all -- a
+---polar midwinter -- dusk lands a nudge below zero and dawn a nudge past one, outside the
+---day they are meant to describe.
+---
+---The engine does not object: measured against 2.1.17, it checks only that the four stay
+---strictly ordered, and stores anything else you hand it verbatim. This keeps them inside
+---the day regardless. It is not what stops the mod crashing -- that is
+---dusk_morning_fraction_of_night reading distance from the equator.
 ---@type number
 seasons.MINIMUM_DAYTIME_FRACTION = 1e-12
 
