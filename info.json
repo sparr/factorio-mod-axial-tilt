@@ -6,5 +6,16 @@
   "homepage": "http://github.com/sparr/factorio-mod-axial-tilt",
   "contact": "sparr0@gmail.com",
   "description": "Adds seasonal changes to the length of the day/night.",
-  "factorio_version": "2.1"
+  "factorio_version": "2.1",
+  "package": {
+    "ignore": [
+      "test/**",
+      "node_modules/**",
+      "package.json",
+      "package-lock.json",
+      "factorio-test.json",
+      ".busted",
+      ".luarocks/**"
+    ]
+  }
 }

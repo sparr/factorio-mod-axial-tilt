@@ -61,3 +61,17 @@ script.on_configuration_changed(setup)
 
 -- TODO: replace with registered Nth tick handler that is aware of configuration changes?
 script.on_event(defines.events.on_tick, on_tick)
+
+--- The integration tier, which runs inside a live game rather than against nothing.
+--- Registered here rather than from the test mod because only the owning mod may write
+--- its own runtime-global settings, and every fixture sets a latitude or a tilt.
+--- at-tests is never published, so this can never fire on a player's machine -- which
+--- matters, because info.json keeps test/ out of the package.
+if script.active_mods["factorio-test"] and script.active_mods["at-tests"] then
+    require("__factorio-test__/init")({
+        "test.ft.daylight",
+    }, {
+        load_luassert = true,
+        game_speed = 100,
+    })
+end

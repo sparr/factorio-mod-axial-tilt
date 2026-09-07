@@ -1,0 +1,7 @@
+{
+  "modPath": ".",
+  "mods": ["at-tests"],
+  "test": {
+    "game_speed": 100
+  }
+}
