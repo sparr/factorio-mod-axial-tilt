@@ -23,6 +23,26 @@ describe("fraction_of_year", function()
     end)
 end)
 
+describe("ticks_per_day", function()
+    it("leaves the planet's own day length alone at no compression", function()
+        assert.equals(25200, seasons.ticks_per_day(25200, 1))
+    end)
+
+    it("gives each planet a different day, because each planet has one", function()
+        -- vulcanus 5400, nauvis 25200, aquilo 72000
+        assert.equals(5400, seasons.ticks_per_day(5400, 1))
+        assert.equals(72000, seasons.ticks_per_day(72000, 1))
+    end)
+
+    it("shortens the day as compression rises", function()
+        assert.equals(252, seasons.ticks_per_day(25200, 100))
+    end)
+
+    it("lengthens the day as compression falls", function()
+        assert.equals(252000, seasons.ticks_per_day(25200, 0.1))
+    end)
+end)
+
 describe("daytime_fraction", function()
     it("splits the day evenly on an untilted planet", function()
         for day = 1, 30 do

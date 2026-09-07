@@ -111,15 +111,41 @@ describe("the mod applied to nauvis", function()
     end)
 end)
 
-describe("the time compression setting", function()
-    test("stretches and shrinks the day", function()
+describe("the day length", function()
+    test("is the planet's own, not a number this mod made up", function()
+        -- nauvis declares 25200. The mod used to hardcode 25000, which is nobody's day.
         local surface = sky.nauvis()
+        assert.equals(25200, surface.get_property("day-night-cycle"))
+    end)
+
+    test("differs from planet to planet, so it cannot be a constant", function()
+        local lengths = {}
+        for name, planet in pairs(game.planets) do
+            lengths[name] = planet.prototype.surface_properties["day-night-cycle"]
+        end
+        assert.equals(25200, lengths.nauvis)
+        if lengths.vulcanus then
+            assert.is_true(lengths.vulcanus ~= lengths.nauvis,
+                "vulcanus and nauvis now share a day length")
+            assert.equals(5400, lengths.vulcanus)
+            assert.equals(72000, lengths.aquilo)
+        end
+    end)
+
+    test("is what the mod itself puts on the surface", function()
+        -- Drives the mod's own setup rather than recomputing what it ought to do, and
+        -- compares against what the engine says the day is. Reimplementing the sum here
+        -- would agree with any constant the mod cared to invent, including 25000.
+        local surface = sky.nauvis()
+        local base = surface.get_property("day-night-cycle")
+
         sky.configure({ compression = 1 })
-        surface.ticks_per_day = 1 / settings.global["axial-tilt-time-compression"].value * 25000
-        assert.equals(25000, surface.ticks_per_day)
+        setup()
+        assert.equals(base, surface.ticks_per_day,
+            "the mod set " .. surface.ticks_per_day .. " for a planet whose day is " .. base)
 
         sky.configure({ compression = 100 })
-        surface.ticks_per_day = 1 / settings.global["axial-tilt-time-compression"].value * 25000
-        assert.equals(250, surface.ticks_per_day)
+        setup()
+        assert.equals(base / 100, surface.ticks_per_day)
     end)
 end)

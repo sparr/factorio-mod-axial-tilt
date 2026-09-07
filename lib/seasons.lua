@@ -16,6 +16,18 @@ local seasons = {}
 ---@type number
 seasons.MINIMUM_DAYTIME_FRACTION = 1e-12
 
+---How long a day lasts, in ticks, once the time compression setting has had its say.
+---
+---The uncompressed length belongs to the planet, not to this mod: nauvis's day is 25200
+---ticks, vulcanus's 5400, aquilo's 72000. Compression above one shortens the day, below
+---one lengthens it.
+---@param day_night_cycle number The planet's own day length, in ticks
+---@param compression number
+---@return number
+function seasons.ticks_per_day(day_night_cycle, compression)
+  return day_night_cycle / compression
+end
+
 ---How far into the year a day falls, in [0, 1)
 ---@param day_num integer
 ---@param days_per_year integer

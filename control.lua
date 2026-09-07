@@ -5,8 +5,21 @@ local seasons = require("lib.seasons")
 ---A time of day, a number in range `[0, 1)`, with 0 being noon and 0.5 being midnight
 ---@alias Daytime number
 
-local function setup()
-  game.surfaces["nauvis"].ticks_per_day = 1 / settings.global['axial-tilt-time-compression'].value * 25000
+---How long a day on this surface lasts before compression, which is the planet's business
+---rather than this mod's. Every planet declares it, and get_property falls back to the
+---property's own default for a surface whose planet does not.
+---@param surface LuaSurface
+---@return number
+local function day_night_cycle(surface)
+  return surface.get_property("day-night-cycle")
+end
+
+---Point the surface at the planet's day length and today's daylight. Global, as the two
+---below are, so the test tier can drive the real path rather than reimplementing it.
+function setup()
+  local surface = game.surfaces["nauvis"]
+  surface.ticks_per_day = seasons.ticks_per_day(day_night_cycle(surface),
+    settings.global['axial-tilt-time-compression'].value)
   update_durations()
 end
 
