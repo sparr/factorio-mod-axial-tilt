@@ -6,6 +6,12 @@ Date: 2026-09-07
   Bugfixes:
     - Stop crashing on load: 2.0 renamed the table a mod's state lives in from global to
       storage, and this mod stores the day counter there
+    - Stop crashing anywhere south of the equator, and at the poles. Dawn and dusk now
+      lengthen with distance from the equator in both hemispheres, where a southern
+      latitude used to drive their length negative and put evening before dusk; and a
+      polar winter now keeps a sliver of daylight rather than none, which used to put
+      dusk below zero. Either one had the engine refuse the whole set of times and take
+      the mod down with it. Latitudes 0 to 68 are unaffected.
 ---------------------------------------------------------------------------------------------------
 Version: 1.1.2
 Date: 2024-09-14

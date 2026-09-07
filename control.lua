@@ -1,5 +1,12 @@
 -- 2.0 renamed the table a mod's state lives in from `global` to `storage`.
 
+---The least daylight a day may have. The four transition times are derived by nudging a
+---few femtoseconds either side of the daylight period, and the engine insists they stay
+---strictly ordered inside [0, 1). Once a polar winter takes daylight to nothing there is
+---nothing left to nudge either side of, and dusk lands below zero -- so leave a sliver.
+---@type number
+local MINIMUM_DAYTIME_FRACTION = 1e-12
+
 ---A time of day, a number in range `[0, 1)`, with 0 being noon and 0.5 being midnight
 ---@alias Daytime number
 
@@ -54,12 +61,21 @@ function update_durations()
   if fraction_of_year<0.25 or fraction_of_year>0.75 then
     daytime_fraction = 1 - daytime_fraction
   end
+  if daytime_fraction < MINIMUM_DAYTIME_FRACTION then
+    daytime_fraction = MINIMUM_DAYTIME_FRACTION
+  end
 
   ---hacky calculation of how long dusk and morning should be as a fraction of the non-day time [0,1)
   ---polar winter still has a very short light period
   ---polar spring/summer are lacking some partiadarkness periods
   ---@type double
-  local dusk_morning_fraction_of_night = 0.3 + (latitude / 90 * 0.3) - math.abs(0.5 - fraction_of_year) * 0.6
+  ---How far from the equator you are, which is what lengthens dawn and dusk. Signed
+  ---latitude shortened them towards the south pole instead of lengthening them, and drove
+  ---this negative below the equator, which put evening before dusk and made the engine
+  ---refuse the whole set.
+  ---@type double
+  local distance_from_equator = math.abs(latitude)
+  local dusk_morning_fraction_of_night = 0.3 + (distance_from_equator / 90 * 0.3) - math.abs(0.5 - fraction_of_year) * 0.6
 
   ---@type Daytime
   local dusk = daytime_fraction / 2.0 - .000000000000002
