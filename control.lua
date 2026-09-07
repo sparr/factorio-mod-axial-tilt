@@ -1,11 +1,6 @@
 -- 2.0 renamed the table a mod's state lives in from `global` to `storage`.
 
----The least daylight a day may have. The four transition times are derived by nudging a
----few femtoseconds either side of the daylight period, and the engine insists they stay
----strictly ordered inside [0, 1). Once a polar winter takes daylight to nothing there is
----nothing left to nudge either side of, and dusk lands below zero -- so leave a sliver.
----@type number
-local MINIMUM_DAYTIME_FRACTION = 1e-12
+local seasons = require("lib.seasons")
 
 ---A time of day, a number in range `[0, 1)`, with 0 being noon and 0.5 being midnight
 ---@alias Daytime number
@@ -48,45 +43,9 @@ function update_durations()
   ---Latitude on the planet
   ---@type double
   local latitude = settings.global['axial-tilt-latitude'].value --[[@as double]]
-  ---How far into the year is the current date? [0,1)
-  ---@type double
-  local fraction_of_year = (storage.day_num % days_per_year) / days_per_year
 
-  ---Accurate calculation of how long daytime should be as a fraction of the day [0,1)
-  ---@type double
-  local daytime_fraction = 1/math.pi*math.acos((math.tan(latitude*math.pi/180)*math.sin(tilt*math.pi/180))/math.sqrt(math.tan(fraction_of_year*2*math.pi)*math.tan(fraction_of_year*2*math.pi)+math.cos(fraction_of_year*2*math.pi)*math.cos(fraction_of_year*2*math.pi)))
-  if daytime_fraction ~= daytime_fraction then -- NaN
-    daytime_fraction = 0
-  end
-  if fraction_of_year<0.25 or fraction_of_year>0.75 then
-    daytime_fraction = 1 - daytime_fraction
-  end
-  if daytime_fraction < MINIMUM_DAYTIME_FRACTION then
-    daytime_fraction = MINIMUM_DAYTIME_FRACTION
-  end
-
-  ---hacky calculation of how long dusk and morning should be as a fraction of the non-day time [0,1)
-  ---polar winter still has a very short light period
-  ---polar spring/summer are lacking some partiadarkness periods
-  ---@type double
-  ---How far from the equator you are, which is what lengthens dawn and dusk. Signed
-  ---latitude shortened them towards the south pole instead of lengthening them, and drove
-  ---this negative below the equator, which put evening before dusk and made the engine
-  ---refuse the whole set.
-  ---@type double
-  local distance_from_equator = math.abs(latitude)
-  local dusk_morning_fraction_of_night = 0.3 + (distance_from_equator / 90 * 0.3) - math.abs(0.5 - fraction_of_year) * 0.6
-
-  ---@type Daytime
-  local dusk = daytime_fraction / 2.0 - .000000000000002
-  ---@type Daytime
-  local evening = daytime_fraction / 2.0 + (dusk_morning_fraction_of_night * (1 - daytime_fraction)) / 2.0 - .000000000000001
-  ---@type Daytime
-  local morning = 1 - daytime_fraction / 2.0 - (dusk_morning_fraction_of_night * (1 - daytime_fraction)) / 2.0 + .000000000000001
-  ---@type Daytime
-  local dawn = 1 - daytime_fraction / 2.0 + .000000000000002
-
-  set_times(game.surfaces["nauvis"], dusk, evening, morning, dawn)
+  local fraction_of_year = seasons.fraction_of_year(storage.day_num, days_per_year)
+  set_times(game.surfaces["nauvis"], seasons.times(fraction_of_year, tilt, latitude))
 end
 
 ---@param _ EventData.on_tick
